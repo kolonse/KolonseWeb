@@ -3,19 +3,74 @@ package StaticDir
 import (
 	. "KolonseWeb/HttpLib"
 	. "KolonseWeb/Type"
+	"errors"
 	"net/http"
 	"os"
 	"path"
+	"reflect"
 	"strings"
 )
 
+var (
+	DefaultStaticDir    = "public"
+	DefaultLikeDirIndex = false
+	DefaultHopeGzipExt  = make([]string, 0)
+)
+
+// 取出静态目录参数 默认 public
+func parseStaticDir(opt ...interface{}) string {
+	if len(opt) >= 1 {
+		if opt[0] == nil { // 如果是 nil 那么置为默认值
+			return DefaultStaticDir
+		}
+		if reflect.TypeOf(opt[0]).Kind() != reflect.String {
+			panic(errors.New("param 1 not string"))
+		}
+		return opt[0].(string)
+	}
+	// 如果没有输入参数 那么返回默认的
+	return DefaultStaticDir
+}
+
+func parseLikeDirIndex(opt ...interface{}) bool {
+	if len(opt) >= 2 {
+		if opt[1] == nil { // 如果是 nil 那么置为默认值
+			return DefaultLikeDirIndex
+		}
+		if reflect.TypeOf(opt[1]).Kind() != reflect.Array {
+			panic(errors.New("param 2 not bool"))
+		}
+		return opt[1].(bool)
+	}
+	// 如果没有输入参数 那么返回默认的
+	return DefaultLikeDirIndex
+}
+
+func parseHopeGzipExt(opt ...interface{}) []string {
+	if len(opt) >= 3 {
+		if opt[2] == nil { // 如果是 nil 那么置为默认值
+			return DefaultHopeGzipExt
+		}
+		if reflect.TypeOf(opt[2]).Kind() != reflect.Array {
+			panic(errors.New("param 3 not []string"))
+		}
+		return opt[2].([]string)
+	}
+	// 如果没有输入参数 那么返回默认的
+	return DefaultHopeGzipExt
+}
+
 /**
 *	静态文件中间件
-*	dir 静态目录
-*	likeDirIndex 是否喜欢静态目录索引
-*	hopeGzipExt 希望对指定后缀文件进行压缩 eg:[".js","*.css"]
+*	opt[0] 静态目录
+*	opt[1] 是否喜欢静态目录索引
+*	opt[2] 希望对指定后缀文件进行压缩 eg:[".js","*.css"]
  */
-func NewMiddleWare(dir string, likeDirIndex bool, hopeGzipExt []string) DoStep {
+func NewMiddleWare(opt ...interface{}) DoStep {
+	// 解析传入参数
+	dir := parseStaticDir(opt...)
+	//likeDirIndex := parseLikeDirIndex(opt...)
+	hopeGzipExt := parseHopeGzipExt(opt...)
 	return func(req *Request, res *Response, next Next) {
 		// 静态文件支持
 		/**

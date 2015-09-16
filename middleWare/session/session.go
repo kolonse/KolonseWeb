@@ -23,7 +23,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Unknwon/macaron"
+	"KolonseWeb/HttpLib"
 )
 
 const _VERSION = "0.1.7"
@@ -42,76 +42,22 @@ func Sessioner(options ...Options) macaron.Handler {
 	}
 	go manager.startGC()
 
-	return func(ctx *macaron.Context) {
-		sess, err := manager.Start(ctx)
+	return func(req HttpLib.Request, res HttpLib.Response, next Next) {
+		sess, err := manager.Start(req, res)
 		if err != nil {
 			panic("session(start): " + err.Error())
 		}
-
-		// Get flash.
-		vals, _ := url.ParseQuery(ctx.GetCookie("macaron_flash"))
-		if len(vals) > 0 {
-			f := &Flash{Values: vals}
-			f.ErrorMsg = f.Get("error")
-			f.SuccessMsg = f.Get("success")
-			f.InfoMsg = f.Get("info")
-			f.WarningMsg = f.Get("warning")
-			ctx.Data["Flash"] = f
-			ctx.SetCookie("macaron_flash", "", -1, opt.CookiePath)
-		}
-
-		f := &Flash{ctx, url.Values{}, "", "", "", ""}
-		ctx.Resp.Before(func(macaron.ResponseWriter) {
-			if flash := f.Encode(); len(flash) > 0 {
-				ctx.SetCookie("macaron_flash", flash, 0, opt.CookiePath)
-			}
-		})
-
-		ctx.Map(f)
 		s := store{
 			RawStore: sess,
 			Manager:  manager,
 		}
 
-		ctx.MapTo(s, (*Store)(nil))
-
-		ctx.Next()
-
+		req.MapTo(s, (*Store)(nil))
 		if err = sess.Release(); err != nil {
 			panic("session(release): " + err.Error())
 		}
+		next()
 	}
-}
-
-// Provider is the interface that provides session manipulations.
-type Provider interface {
-	// Init initializes session provider.
-	Init(gclifetime int64, config string) error
-	// Read returns raw session store by session ID.
-	Read(sid string) (RawStore, error)
-	// Exist returns true if session with given ID exists.
-	Exist(sid string) bool
-	// Destory deletes a session by session ID.
-	Destory(sid string) error
-	// Regenerate regenerates a session store from old session ID to new one.
-	Regenerate(oldsid, sid string) (RawStore, error)
-	// Count counts and returns number of sessions.
-	Count() int
-	// GC calls GC to clean expired sessions.
-	GC()
-}
-
-var providers = make(map[string]Provider)
-
-// Register registers a provider.
-func Register(name string, provider Provider) {
-	if provider == nil {
-		panic("session: cannot register provider with nil value")
-	}
-	if _, dup := providers[name]; dup {
-		panic(fmt.Errorf("session: cannot register provider '%s' twice", name))
-	}
-	providers[name] = provider
 }
 
 //    _____
@@ -144,7 +90,7 @@ func (m *Manager) sessionId() string {
 
 // Start starts a session by generating new one
 // or retrieve existence one by reading session ID from HTTP request if it's valid.
-func (m *Manager) Start(ctx *macaron.Context) (RawStore, error) {
+func (m *Manager) Start(req HttpLib.Request, res HttpLib.Response) (RawStore, error) {
 	sid := ctx.GetCookie(m.opt.CookieName)
 	if len(sid) > 0 && m.provider.Exist(sid) {
 		return m.provider.Read(sid)
@@ -178,7 +124,7 @@ func (m *Manager) Read(sid string) (RawStore, error) {
 }
 
 // Destory deletes a session by given ID.
-func (m *Manager) Destory(ctx *macaron.Context) error {
+func (m *Manager) Destory(req HttpLib.Request, res HttpLib.Response) error {
 	sid := ctx.GetCookie(m.opt.CookieName)
 	if len(sid) == 0 {
 		return nil
@@ -199,7 +145,7 @@ func (m *Manager) Destory(ctx *macaron.Context) error {
 }
 
 // RegenerateId regenerates a session store from old session ID to new one.
-func (m *Manager) RegenerateId(ctx *macaron.Context) (sess RawStore, err error) {
+func (m *Manager) RegenerateId(req HttpLib.Request, res HttpLib.Response) (sess RawStore, err error) {
 	sid := m.sessionId()
 	oldsid := ctx.GetCookie(m.opt.CookieName)
 	sess, err = m.provider.Regenerate(oldsid, sid)
@@ -241,51 +187,4 @@ func (m *Manager) startGC() {
 // SetSecure indicates whether to set cookie with HTTPS or not.
 func (m *Manager) SetSecure(secure bool) {
 	m.opt.Secure = secure
-}
-
-// ___________.____       _____    _________ ___ ___
-// \_   _____/|    |     /  _  \  /   _____//   |   \
-//  |    __)  |    |    /  /_\  \ \_____  \/    ~    \
-//  |     \   |    |___/    |    \/        \    Y    /
-//  \___  /   |_______ \____|__  /_______  /\___|_  /
-//      \/            \/       \/        \/       \/
-
-type Flash struct {
-	ctx *macaron.Context
-	url.Values
-	ErrorMsg, WarningMsg, InfoMsg, SuccessMsg string
-}
-
-func (f *Flash) set(name, msg string, current ...bool) {
-	isShow := false
-	if (len(current) == 0 && macaron.FlashNow) ||
-		(len(current) > 0 && current[0]) {
-		isShow = true
-	}
-
-	if isShow {
-		f.ctx.Data["Flash"] = f
-	} else {
-		f.Set(name, msg)
-	}
-}
-
-func (f *Flash) Error(msg string, current ...bool) {
-	f.ErrorMsg = msg
-	f.set("error", msg, current...)
-}
-
-func (f *Flash) Warning(msg string, current ...bool) {
-	f.WarningMsg = msg
-	f.set("warning", msg, current...)
-}
-
-func (f *Flash) Info(msg string, current ...bool) {
-	f.InfoMsg = msg
-	f.set("info", msg, current...)
-}
-
-func (f *Flash) Success(msg string, current ...bool) {
-	f.SuccessMsg = msg
-	f.set("success", msg, current...)
 }

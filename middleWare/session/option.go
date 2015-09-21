@@ -1,14 +1,6 @@
 package session
 
-import (
-	"encoding/hex"
-	"fmt"
-	"net/http"
-	"net/url"
-	"time"
-
-	"github.com/Unknwon/macaron"
-)
+import ()
 
 // Options represents a struct for specifying configuration options for the session middleware.
 type Options struct {
@@ -44,37 +36,27 @@ func prepareOptions(options []Options) Options {
 	if len(opt.Section) == 0 {
 		opt.Section = "session"
 	}
-	sec := macaron.Config().Section(opt.Section)
 
 	if len(opt.Provider) == 0 {
-		opt.Provider = sec.Key("PROVIDER").MustString("memory")
+		opt.Provider = "memory"
 	}
 	if len(opt.ProviderConfig) == 0 {
-		opt.ProviderConfig = sec.Key("PROVIDER_CONFIG").MustString("data/sessions")
+		opt.ProviderConfig = "data/sessions"
 	}
 	if len(opt.CookieName) == 0 {
-		opt.CookieName = sec.Key("COOKIE_NAME").MustString("MacaronSession")
+		opt.CookieName = "kolonse"
 	}
 	if len(opt.CookiePath) == 0 {
-		opt.CookiePath = sec.Key("COOKIE_PATH").MustString("/")
+		opt.CookiePath = "/"
 	}
 	if opt.Gclifetime == 0 {
-		opt.Gclifetime = sec.Key("GC_INTERVAL_TIME").MustInt64(3600)
+		opt.Gclifetime = 3600
 	}
 	if opt.Maxlifetime == 0 {
-		opt.Maxlifetime = sec.Key("MAX_LIFE_TIME").MustInt64(opt.Gclifetime)
-	}
-	if !opt.Secure {
-		opt.Secure = sec.Key("SECURE").MustBool()
-	}
-	if opt.CookieLifeTime == 0 {
-		opt.CookieLifeTime = sec.Key("COOKIE_LIFE_TIME").MustInt()
-	}
-	if len(opt.Domain) == 0 {
-		opt.Domain = sec.Key("DOMAIN").String()
+		opt.Maxlifetime = opt.Gclifetime
 	}
 	if opt.IDLength == 0 {
-		opt.IDLength = sec.Key("ID_LENGTH").MustInt(16)
+		opt.IDLength = 16
 	}
 
 	return opt

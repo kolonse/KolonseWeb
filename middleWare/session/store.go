@@ -1,7 +1,13 @@
 package session
 
 import (
-	"KolonseWeb/HttpLib"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/Unknwon/macaron"
 )
 
 // RawStore is the interface that operates the session data.
@@ -26,9 +32,9 @@ type Store interface {
 	// Read returns raw session store by session ID.
 	Read(string) (RawStore, error)
 	// Destory deletes a session.
-	Destory(*HttpLib.Request, *HttpLib.Response) error
+	Destory(*macaron.Context) error
 	// RegenerateId regenerates a session store from old session ID to new one.
-	RegenerateId(*HttpLib.Request, *HttpLib.Response) (RawStore, error)
+	RegenerateId(*macaron.Context) (RawStore, error)
 	// Count counts and returns number of sessions.
 	Count() int
 	// GC calls GC to clean expired sessions.

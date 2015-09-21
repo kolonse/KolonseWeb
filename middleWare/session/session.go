@@ -17,13 +17,12 @@
 package session
 
 import (
+	"KolonseWeb/HttpLib"
+	"KolonseWeb/Type"
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
-
-	"KolonseWeb/HttpLib"
 )
 
 const _VERSION = "0.1.7"
@@ -34,7 +33,7 @@ func Version() string {
 
 // Sessioner is a middleware that maps a session.SessionStore service into the Macaron handler chain.
 // An single variadic session.Options struct can be optionally provided to configure.
-func Sessioner(options ...Options) macaron.Handler {
+func Sessioner(options ...Options) Type.DoStep {
 	opt := prepareOptions(options)
 	manager, err := NewManager(opt.Provider, opt)
 	if err != nil {
@@ -42,7 +41,7 @@ func Sessioner(options ...Options) macaron.Handler {
 	}
 	go manager.startGC()
 
-	return func(req HttpLib.Request, res HttpLib.Response, next Next) {
+	return func(req *HttpLib.Request, res *HttpLib.Response, next Type.Next) {
 		sess, err := manager.Start(req, res)
 		if err != nil {
 			panic("session(start): " + err.Error())
@@ -90,8 +89,8 @@ func (m *Manager) sessionId() string {
 
 // Start starts a session by generating new one
 // or retrieve existence one by reading session ID from HTTP request if it's valid.
-func (m *Manager) Start(req HttpLib.Request, res HttpLib.Response) (RawStore, error) {
-	sid := ctx.GetCookie(m.opt.CookieName)
+func (m *Manager) Start(req *HttpLib.Request, res *HttpLib.Response) (RawStore, error) {
+	sid := req.GetCookie(m.opt.CookieName)
 	if len(sid) > 0 && m.provider.Exist(sid) {
 		return m.provider.Read(sid)
 	}
@@ -113,8 +112,8 @@ func (m *Manager) Start(req HttpLib.Request, res HttpLib.Response) (RawStore, er
 	if m.opt.CookieLifeTime >= 0 {
 		cookie.MaxAge = m.opt.CookieLifeTime
 	}
-	http.SetCookie(ctx.Resp, cookie)
-	ctx.Req.AddCookie(cookie)
+	http.SetCookie(res, cookie)
+	req.AddCookie(cookie)
 	return sess, nil
 }
 
@@ -124,8 +123,8 @@ func (m *Manager) Read(sid string) (RawStore, error) {
 }
 
 // Destory deletes a session by given ID.
-func (m *Manager) Destory(req HttpLib.Request, res HttpLib.Response) error {
-	sid := ctx.GetCookie(m.opt.CookieName)
+func (m *Manager) Destory(req *HttpLib.Request, res *HttpLib.Response) error {
+	sid := req.GetCookie(m.opt.CookieName)
 	if len(sid) == 0 {
 		return nil
 	}
@@ -140,14 +139,14 @@ func (m *Manager) Destory(req HttpLib.Request, res HttpLib.Response) error {
 		Expires:  time.Now(),
 		MaxAge:   -1,
 	}
-	http.SetCookie(ctx.Resp, cookie)
+	http.SetCookie(res, cookie)
 	return nil
 }
 
 // RegenerateId regenerates a session store from old session ID to new one.
-func (m *Manager) RegenerateId(req HttpLib.Request, res HttpLib.Response) (sess RawStore, err error) {
+func (m *Manager) RegenerateId(req *HttpLib.Request, res *HttpLib.Response) (sess RawStore, err error) {
 	sid := m.sessionId()
-	oldsid := ctx.GetCookie(m.opt.CookieName)
+	oldsid := req.GetCookie(m.opt.CookieName)
 	sess, err = m.provider.Regenerate(oldsid, sid)
 	if err != nil {
 		return nil, err
@@ -163,8 +162,8 @@ func (m *Manager) RegenerateId(req HttpLib.Request, res HttpLib.Response) (sess 
 	if m.opt.CookieLifeTime >= 0 {
 		ck.MaxAge = m.opt.CookieLifeTime
 	}
-	http.SetCookie(ctx.Resp, ck)
-	ctx.Req.AddCookie(ck)
+	http.SetCookie(res, ck)
+	req.AddCookie(ck)
 	return sess, nil
 }
 

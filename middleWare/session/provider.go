@@ -1,13 +1,7 @@
 package session
 
 import (
-	"encoding/hex"
 	"fmt"
-	"net/http"
-	"net/url"
-	"time"
-
-	"github.com/Unknwon/macaron"
 )
 
 // Provider is the interface that provides session manipulations.

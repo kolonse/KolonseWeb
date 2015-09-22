@@ -56,14 +56,16 @@ func (routesHandlers *RoutesHandlers) Post(patter string, do DoStep) {
 func (routesHandlers *RoutesHandlers) Do(req *Request, res *Response) {
 	methodRoutesHandlers, ok := routesHandlers.Routes[req.Method]
 	if !ok {
-		routesHandlers.nextStep = true
-		res.WriteHeader(http.StatusMethodNotAllowed)
+		//routesHandlers.nextStep = true
+		//res.WriteHeader(http.StatusMethodNotAllowed)
+		http.NotFound(res.ResponseWriter, req.Request)
 		return
 	}
 	routesHandler, ok := methodRoutesHandlers[req.Path]
 	if !ok {
-		routesHandlers.nextStep = true
-		res.WriteHeader(http.StatusNotFound)
+		//routesHandlers.nextStep = true
+		//res.WriteHeader(http.StatusNotFound)
+		http.NotFound(res.ResponseWriter, req.Request)
 		return
 	}
 	routesHandler.Do(req, res, routesHandler.Next)

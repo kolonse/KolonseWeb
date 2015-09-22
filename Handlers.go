@@ -96,14 +96,14 @@ func (h *Handlers) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func toKolonseRequest(req *http.Request) *Request {
-	request := &Request{}
+	request := NewRequest()
 	request.Request = req
 	request.Path = request.URL.Path
 	return request
 }
 
 func toKolonseResponse(res *http.ResponseWriter) *Response {
-	response := &Response{}
+	response := NewResponse()
 	response.ResponseWriter = *res
 	return response
 }

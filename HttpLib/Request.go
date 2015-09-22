@@ -21,3 +21,9 @@ func (req *Request) GetCookie(name string) string {
 	val, _ := url.QueryUnescape(cookie.Value)
 	return val
 }
+
+func NewRequest() *Request {
+	ret := &Request{}
+	ret.Injector = inject.New()
+	return ret
+}

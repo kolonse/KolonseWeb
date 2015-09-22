@@ -27,7 +27,6 @@ func (res *Response) Json(obj interface{}) {
 	res.Header().Set("Content-Type", "application/json; charset=utf-8")
 	encoder := json.NewEncoder(res)
 	err := encoder.Encode(obj)
-	fmt.Println(err)
 	if err != nil {
 		panic(err)
 	}
@@ -80,4 +79,10 @@ func (res *Response) SetCookie(name string, value string, others ...interface{})
 	}
 
 	res.Header().Add("Set-Cookie", cookie.String())
+}
+
+func NewResponse() *Response {
+	ret := &Response{}
+	ret.Injector = inject.New()
+	return ret
 }

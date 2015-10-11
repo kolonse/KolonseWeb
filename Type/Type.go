@@ -1,7 +1,7 @@
 package Type
 
 import (
-	. "KolonseWeb/HttpLib"
+	. "github.com/kolonse/KolonseWeb/HttpLib"
 )
 
 // next 函数定义 模拟 nodejs express 框架

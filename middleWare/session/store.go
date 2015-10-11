@@ -1,7 +1,7 @@
 package session
 
 import (
-	"KolonseWeb/HttpLib"
+	"github.com/kolonse/KolonseWeb/HttpLib"
 )
 
 // RawStore is the interface that operates the session data.

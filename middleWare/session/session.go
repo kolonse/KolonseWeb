@@ -17,10 +17,10 @@
 package session
 
 import (
-	"KolonseWeb/HttpLib"
-	"KolonseWeb/Type"
 	"encoding/hex"
 	"fmt"
+	"github.com/kolonse/KolonseWeb/HttpLib"
+	"github.com/kolonse/KolonseWeb/Type"
 	"net/http"
 	"time"
 )

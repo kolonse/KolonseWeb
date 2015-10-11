@@ -1,9 +1,9 @@
 package StaticDir
 
 import (
-	. "KolonseWeb/HttpLib"
-	. "KolonseWeb/Type"
 	"errors"
+	. "github.com/kolonse/KolonseWeb/HttpLib"
+	. "github.com/kolonse/KolonseWeb/Type"
 	"net/http"
 	"os"
 	"path"

@@ -1,7 +1,7 @@
 package KolonseWeb
 
 import (
-	. "KolonseWeb/Type"
+	. "github.com/kolonse/KolonseWeb/Type"
 )
 
 type MiddleWares struct {

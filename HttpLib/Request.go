@@ -1,7 +1,7 @@
 package HttpLib
 
 import (
-	"KolonseWeb/inject"
+	"github.com/kolonse/KolonseWeb/inject"
 	"net/http"
 	"net/url"
 )

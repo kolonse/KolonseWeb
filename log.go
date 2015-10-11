@@ -1,7 +1,7 @@
 package KolonseWeb
 
 import (
-	"KolonseWeb/logs"
+	"github.com/kolonse/logs"
 	"strings"
 )
 

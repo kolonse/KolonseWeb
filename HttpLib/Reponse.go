@@ -1,10 +1,10 @@
 package HttpLib
 
 import (
-	"KolonseWeb/inject"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/kolonse/KolonseWeb/inject"
 	"io"
 	"net/http"
 	"net/url"

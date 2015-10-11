@@ -2,8 +2,8 @@
 package KolonseWeb
 
 import (
-	. "KolonseWeb/Type"
 	"fmt"
+	. "github.com/kolonse/KolonseWeb/Type"
 	"net/http"
 	"os"
 	"os/signal"

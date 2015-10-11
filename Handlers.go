@@ -1,8 +1,8 @@
 package KolonseWeb
 
 import (
-	. "KolonseWeb/HttpLib"
-	. "KolonseWeb/Type"
+	. "github.com/kolonse/KolonseWeb/HttpLib"
+	. "github.com/kolonse/KolonseWeb/Type"
 	"net/http"
 )
 

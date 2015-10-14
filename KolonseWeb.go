@@ -4,6 +4,7 @@ package KolonseWeb
 import (
 	"fmt"
 	. "github.com/kolonse/KolonseWeb/Type"
+	"github.com/kolonse/logs"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 type App struct {
 	Handlers *Handlers
 	Server   *http.Server
+	logger   *logs.BeeLogger
 }
 
 func (app *App) Use(do DoStep) {
@@ -28,7 +30,7 @@ func (app *App) Post(patter string, do DoStep) {
 }
 
 func (app *App) Listen(host string, port int) {
-	BeeLogger.Info("listen on %s:%d", host, port)
+	app.logger.Info("listen on %s:%d", host, port)
 	endRunning := make(chan bool, 1)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -38,7 +40,7 @@ func (app *App) Listen(host string, port int) {
 		app.Server.Handler = app.Handlers
 		err := app.Server.ListenAndServe()
 		if err != nil {
-			BeeLogger.Critical("ListenAndServe: ", err)
+			app.logger.Critical("ListenAndServe: ", err)
 			endRunning <- true
 			return
 		}
@@ -57,6 +59,7 @@ func NewApp() *App {
 	app := &App{
 		Handlers: h,
 		Server:   &http.Server{},
+		logger:   BeeLogger,
 	}
 	return app
 }

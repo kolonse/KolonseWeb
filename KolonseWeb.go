@@ -59,7 +59,7 @@ func NewApp() *App {
 	app := &App{
 		Handlers: h,
 		Server:   &http.Server{},
-		logger:   BeeLogger,
+		logger:   DefaultLogs(),
 	}
 	return app
 }

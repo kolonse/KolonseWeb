@@ -4,12 +4,16 @@ import (
 	"errors"
 	. "github.com/kolonse/KolonseWeb/HttpLib"
 	. "github.com/kolonse/KolonseWeb/Type"
-	"net/http"
+
 	"os"
 	"path"
+
 	"reflect"
 	"strings"
 )
+
+// The algorithm uses at most sniffLen bytes to make its decision.
+//const sniffLen = 512
 
 var (
 	DefaultStaticDir    = "public"
@@ -115,7 +119,9 @@ func NewMiddleWare(opt ...interface{}) DoStep {
 			next()
 			return
 		} else {
-			http.ServeFile(res.ResponseWriter, req.Request, file)
+			serveFile(res.ResponseWriter, req.Request, file)
 		}
 	}
 }
+
+// name is '/'-separated, not filepath.Separator.

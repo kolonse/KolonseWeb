@@ -404,3 +404,8 @@ func sumRangesSize(ranges []httpRange) (size int64) {
 	}
 	return
 }
+
+func init() {
+	mime.AddExtensionType(".js", "application/x-javascript")
+	mime.AddExtensionType(".css", "text/css; charset=utf-8")
+}

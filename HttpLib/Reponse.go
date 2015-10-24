@@ -8,12 +8,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 )
 
 // ResponseWriter 重新定义 增加状态码属性
 type Response struct {
 	http.ResponseWriter
 	inject.Injector
+	Req *Request
 }
 
 func (res *Response) End(resString ...interface{}) {
@@ -30,6 +32,24 @@ func (res *Response) Json(obj interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (res *Response) Redirect(p ...interface{}) {
+	url := ""
+	code := 302
+	if p != nil && len(p) > 0 {
+		if len(p) > 0 {
+			if reflect.TypeOf(p[0]).Kind() == reflect.String {
+				url = p[0].(string)
+			}
+		}
+		if len(p) > 1 {
+			if reflect.TypeOf(p[1]).Kind() == reflect.Int {
+				code = p[1].(int)
+			}
+		}
+	}
+	http.Redirect(res.ResponseWriter, res.Req.Request, url, code)
 }
 
 func (res *Response) SetCookie(name string, value string, others ...interface{}) {

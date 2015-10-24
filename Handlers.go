@@ -92,7 +92,10 @@ func (h *Handlers) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	/**
 	 *
 	 */
-	h.WalkSteps(toKolonseRequest(req), toKolonseResponse(&res))
+	kReq := toKolonseRequest(req)
+	kRes := toKolonseResponse(&res)
+	kRes.Req = kReq
+	h.WalkSteps(kReq, kRes)
 }
 
 func toKolonseRequest(req *http.Request) *Request {
